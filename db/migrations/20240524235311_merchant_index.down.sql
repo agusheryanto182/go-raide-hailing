@@ -1,0 +1,19 @@
+DROP INDEX IF EXISTS merchant_id;
+DROP INDEX IF EXISTS merchant_name;
+DROP INDEX IF EXISTS merchant_category_SmallRestaurant;
+DROP INDEX IF EXISTS merchant_category_MediumRestaurant;
+DROP INDEX IF EXISTS merchant_category_LargeRestaurant;
+DROP INDEX IF EXISTS merchant_category_MerchandiseRestaurant;
+DROP INDEX IF EXISTS merchant_category_BoothKiosk;
+DROP INDEX IF EXISTS merchant_category_ConvenienceStore;
+DROP INDEX IF EXISTS merchant_created_at;
+
+DROP INDEX IF EXISTS merchant_item_id;
+DROP INDEX IF EXISTS merchant_item_merchant_id;
+DROP INDEX IF EXISTS merchant_item_name;
+DROP INDEX IF EXISTS merchant_item_product_category_Beverage;
+DROP INDEX IF EXISTS merchant_item_product_category_Food;
+DROP INDEX IF EXISTS merchant_item_product_category_Snack;
+DROP INDEX IF EXISTS merchant_item_product_category_Condiments;
+DROP INDEX IF EXISTS merchant_item_product_category_Additions;
+DROP INDEX IF EXISTS merchant_item_created_at;

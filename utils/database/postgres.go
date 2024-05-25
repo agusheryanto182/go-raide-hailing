@@ -18,6 +18,6 @@ func InitDatabase(cfg config.Global) (*sqlx.DB, error) {
 	// db.SetMaxIdleConns(cfg.DbMaxIdleConns)
 	// db.SetConnMaxLifetime(cfg.DbMaxConnLifetime)
 
-	logging.GetLogger("db").Info(fmt.Sprintf("Connected to database: %s", cfg.DbString))
+	logging.GetLogger("db").Debug(fmt.Sprintf("Connected to database: %s", cfg.DbString))
 	return db, err
 }

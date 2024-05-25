@@ -5,12 +5,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func BindValidate(ctx *fiber.Ctx, req interface{}) error {
+func BindValidate(ctx *fiber.Ctx, req interface{}, validator *validator.Validate) error {
 	if err := ctx.BodyParser(req); err != nil {
 		return err
 	}
 
-	if err := validator.New().Struct(req); err != nil {
+	if err := validator.Struct(req); err != nil {
 		return err
 	}
 

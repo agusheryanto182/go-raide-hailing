@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/agusheryanto182/go-raide-hailing/config"
+	"github.com/agusheryanto182/go-raide-hailing/utils/customErr"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -56,11 +57,11 @@ func (s *JWTService) ValidateToken(tokenString string) (*JWTPayload, error) {
 		return []byte(s.cfg.JwtSecretKey), nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, customErr.NewUnauthorizedError("Access denied: failed to parse token")
 	}
 
 	if claims.RegisteredClaims.ExpiresAt.Before(time.Now()) {
-		return nil, err
+		return nil, customErr.NewUnauthorizedError("Access denied: token expired")
 	}
 
 	payload := &JWTPayload{

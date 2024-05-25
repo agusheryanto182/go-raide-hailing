@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/image"
+	"github.com/agusheryanto182/go-raide-hailing/module/feature/merchant"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/user"
 	"github.com/agusheryanto182/go-raide-hailing/module/middleware"
 	"github.com/agusheryanto182/go-raide-hailing/utils/jwt"
@@ -20,5 +21,10 @@ func UserRoute(app *fiber.App, controller user.UserControllerInterface, jwtServi
 
 func ImageRoute(app *fiber.App, controller image.ImageControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
 	image := app.Group("/image")
-	image.Post("", middleware.Protected(jwtService, userService), controller.UploadImage)
+	image.Post("", middleware.ProtectedWithRole(jwtService, userService, "admin"), controller.UploadImage)
+}
+
+func MerchantRoute(app *fiber.App, controller merchant.MerchantControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
+	merchant := app.Group("/admin/merchants")
+	merchant.Post("", middleware.ProtectedWithRole(jwtService, userService, "admin"), controller.CreateMerchant)
 }

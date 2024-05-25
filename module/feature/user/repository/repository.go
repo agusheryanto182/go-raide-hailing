@@ -7,11 +7,9 @@ import (
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/user"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/user/dto"
 	"github.com/agusheryanto182/go-raide-hailing/utils/customErr"
-	"github.com/jmoiron/sqlx"
 )
 
 type userRepository struct {
-	db         *sqlx.DB
 	statements statements
 }
 
@@ -19,7 +17,7 @@ type userRepository struct {
 func (u *userRepository) CheckConflict(ctx context.Context, username string, email string, role string) error {
 	var userExists, emailExists bool
 
-	if err := u.statements.checkUsernameAndEmail.QueryRowContext(ctx, username, email, role).Scan(&userExists, &emailExists); err != nil {
+	if err := u.statements.checkUsernameAndEmail.QueryRowxContext(ctx, username, email, role).Scan(&userExists, &emailExists); err != nil {
 		return customErr.NewInternalServerError(err.Error())
 	}
 
@@ -38,7 +36,7 @@ func (u *userRepository) CheckConflict(ctx context.Context, username string, ema
 func (u *userRepository) CheckUser(ctx context.Context, id string, username string, role string) (bool, error) {
 	var userExists bool
 
-	if err := u.statements.checkUser.QueryRowContext(ctx, id, username, role).Scan(&userExists); err != nil {
+	if err := u.statements.checkUser.QueryRowxContext(ctx, id, username, role).Scan(&userExists); err != nil {
 		return false, customErr.NewInternalServerError(err.Error())
 	}
 
@@ -49,7 +47,7 @@ func (u *userRepository) CheckUser(ctx context.Context, id string, username stri
 func (u *userRepository) FindByUsernameAndRole(ctx context.Context, username, role string) (*entities.User, error) {
 	user := &entities.User{}
 
-	if err := u.statements.findByUsernameAndRole.QueryRowContext(ctx, username, role).Scan(&user.ID, &user.Username, &user.Password, &user.Role, &user.Email); err != nil {
+	if err := u.statements.findByUsernameAndRole.QueryRowxContext(ctx, username, role).Scan(&user.ID, &user.Username, &user.Password, &user.Role, &user.Email); err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			return nil, customErr.NewNotFoundError("user not found")
 		}
@@ -63,16 +61,15 @@ func (u *userRepository) FindByUsernameAndRole(ctx context.Context, username, ro
 func (u *userRepository) RegisterUser(ctx context.Context, payload *dto.ReqCreateUser) (string, error) {
 	var id string
 
-	if err := u.statements.registerUser.QueryRowContext(ctx, payload.Username, payload.Password, payload.Role, payload.Email).Scan(&id); err != nil {
+	if err := u.statements.registerUser.QueryRowxContext(ctx, payload.Username, payload.Password, payload.Role, payload.Email).Scan(&id); err != nil {
 		return "", customErr.NewInternalServerError(err.Error())
 	}
 
 	return id, nil
 }
 
-func NewUserRepository(db *sqlx.DB) user.UserRepositoryInterface {
+func NewUserRepository() user.UserRepositoryInterface {
 	return &userRepository{
-		db:         db,
 		statements: prepareStatements(),
 	}
 }
