@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
+
 	"github.com/agusheryanto182/go-raide-hailing/config"
 	imageController "github.com/agusheryanto182/go-raide-hailing/module/feature/image/controller"
 	imageService "github.com/agusheryanto182/go-raide-hailing/module/feature/image/service"
@@ -83,11 +86,12 @@ func main() {
 	defer db.Close()
 
 	app.Use(recover.New())
-	app.Use(middleware.Logger())
+	app.Use(fiberLogger.New())
+	app.Use(cors.New())
 
 	// repo
 	userRepo := userRepo.NewUserRepository()
-	merchantRepo := merchantRepo.NewMerchantRepository()
+	merchantRepo := merchantRepo.NewMerchantRepository(db)
 
 	// service
 	userService := userService.NewUserService(userRepo, jwt, hash)

@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/agusheryanto182/go-raide-hailing/module/entities"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/user"
@@ -17,8 +19,17 @@ type userRepository struct {
 func (u *userRepository) CheckConflict(ctx context.Context, username string, email string, role string) error {
 	var userExists, emailExists bool
 
-	if err := u.statements.checkUsernameAndEmail.QueryRowxContext(ctx, username, email, role).Scan(&userExists, &emailExists); err != nil {
+	rows, err := u.statements.checkUsernameAndEmail.QueryxContext(ctx, username, email, role)
+	if err != nil {
 		return customErr.NewInternalServerError(err.Error())
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&userExists, &emailExists); err != nil {
+			return customErr.NewInternalServerError(err.Error())
+		}
 	}
 
 	if userExists {
@@ -47,11 +58,20 @@ func (u *userRepository) CheckUser(ctx context.Context, id string, username stri
 func (u *userRepository) FindByUsernameAndRole(ctx context.Context, username, role string) (*entities.User, error) {
 	user := &entities.User{}
 
-	if err := u.statements.findByUsernameAndRole.QueryRowxContext(ctx, username, role).Scan(&user.ID, &user.Username, &user.Password, &user.Role, &user.Email); err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			return nil, customErr.NewNotFoundError("user not found")
-		}
+	rows, err := u.statements.findByUsernameAndRole.QueryxContext(ctx, username, role)
+	if err != nil {
 		return nil, customErr.NewInternalServerError(err.Error())
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.StructScan(user); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, customErr.NewNotFoundError("user not found")
+			}
+			return nil, customErr.NewInternalServerError(err.Error())
+		}
 	}
 
 	return user, nil

@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS merchants (
     name varchar(30) NOT NULL,
     merchant_category varchar(30) NOT NULL,
     image_url varchar NOT NULL,
-    location float[] NOT NULL,
+    location float8[] NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
