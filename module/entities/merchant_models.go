@@ -1,12 +1,13 @@
 package entities
 
 type Merchant struct {
-	ID               string    `db:"id" json:"id"`
-	Name             string    `db:"name" json:"name"`
-	MerchantCategory string    `db:"merchant_category" json:"merchant_category"`
-	ImageUrl         string    `db:"image_url" json:"image_url"`
-	Location         []float64 `db:"location" json:"location"`
-	CreatedAt        string    `db:"created_at" json:"created_at"`
+	ID               string  `db:"id"`
+	Name             string  `db:"name"`
+	MerchantCategory string  `db:"merchant_category" `
+	ImageUrl         string  `db:"image_url"`
+	LocationLat      float64 `db:"location_lat"`
+	LocationLong     float64 `db:"location_long"`
+	CreatedAt        string  `db:"created_at"`
 }
 
 type Location struct {

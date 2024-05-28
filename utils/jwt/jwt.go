@@ -57,7 +57,7 @@ func (s *JWTService) ValidateToken(tokenString string) (*JWTPayload, error) {
 		return []byte(s.cfg.JwtSecretKey), nil
 	})
 	if err != nil {
-		return nil, customErr.NewUnauthorizedError("Access denied: failed to parse token")
+		return nil, customErr.NewUnauthorizedError("Access denied: " + err.Error())
 	}
 
 	if claims.RegisteredClaims.ExpiresAt.Before(time.Now()) {

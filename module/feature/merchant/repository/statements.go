@@ -19,12 +19,14 @@ func prepareStatements() statements {
 			name,
 			merchant_category,
 			image_url,
-			location
+			location_lat,
+			location_long
 		) VALUES (
 			:name,
 			:merchant_category,
 			:image_url,
-			:location
+			:location_lat,
+			:location_long
 		) RETURNING id
 		`),
 

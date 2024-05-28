@@ -10,7 +10,6 @@ import (
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/merchant"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/merchant/dto"
 	"github.com/agusheryanto182/go-raide-hailing/utils/customErr"
-	"github.com/agusheryanto182/go-raide-hailing/utils/parser"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -154,22 +153,18 @@ func (m *merchantsRepository) FindMerchantByFilters(ctx context.Context, payload
 
 	for rows.Next() {
 		var tempCreatedAt *time.Time
-		var tempLocation string
 		merchant := &dto.ResGetMerchant{}
 		if err := rows.Scan(
 			&merchant.ID,
 			&merchant.Name,
 			&merchant.MerchantCategory,
 			&merchant.ImageUrl,
-			&tempLocation,
+			&merchant.Location.Latitude,
+			&merchant.Location.Longitude,
 			&tempCreatedAt,
 		); err != nil {
 			return nil, nil, customErr.NewInternalServerError("failed to scan merchant : " + err.Error())
 		}
-
-		location, _ := parser.ParseFloatArray(tempLocation)
-		merchant.Location.Latitude = location[0]
-		merchant.Location.Longitude = location[1]
 
 		merchant.CreatedAt = tempCreatedAt.Format("2006-01-02T15:04:05.000000000Z")
 		merchants = append(merchants, merchant)

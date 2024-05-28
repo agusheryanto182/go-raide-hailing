@@ -45,7 +45,8 @@ func (m *merchantService) CreateMerchant(ctx context.Context, payload *dto.ReqCr
 		Name:             payload.Name,
 		MerchantCategory: payload.MerchantCategory,
 		ImageUrl:         payload.ImageUrl,
-		Location:         []float64{*payload.Location.Latitude, *payload.Location.Longitude},
+		LocationLat:      *payload.Location.Latitude,
+		LocationLong:     *payload.Location.Longitude,
 	})
 
 	if err != nil {
