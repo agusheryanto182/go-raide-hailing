@@ -4,6 +4,7 @@ import (
 	"github.com/agusheryanto182/go-raide-hailing/module/entities"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/image"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/merchant"
+	"github.com/agusheryanto182/go-raide-hailing/module/feature/purchase"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/user"
 	"github.com/agusheryanto182/go-raide-hailing/module/middleware"
 	"github.com/agusheryanto182/go-raide-hailing/utils/jwt"
@@ -25,10 +26,13 @@ func ImageRoute(app *fiber.App, controller image.ImageControllerInterface, jwtSe
 	image.Post("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.UploadImage)
 }
 
-func MerchantRoute(app *fiber.App, controller merchant.MerchantControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
-	merchant := app.Group("/admin/merchants")
-	merchant.Post("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.CreateMerchant)
-	merchant.Get("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.GetMerchantByFilters)
-	merchant.Post("/:merchantId/items", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.CreateMerchantItems)
-	merchant.Get("/:merchantId/items", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.GetMerchantItemsByFilters)
+func MerchantRoute(app *fiber.App, controller merchant.MerchantControllerInterface, controllerPurchase purchase.PurchaseControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
+	merchantAdmin := app.Group("/admin/merchants")
+	merchantAdmin.Post("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.CreateMerchant)
+	merchantAdmin.Get("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.GetMerchantByFilters)
+	merchantAdmin.Post("/:merchantId/items", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.CreateMerchantItems)
+	merchantAdmin.Get("/:merchantId/items", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.GetMerchantItemsByFilters)
+
+	merchantUser := app.Group("/merchants")
+	merchantUser.Get("/nearby/:coords", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controllerPurchase.GetNearbyMerchants)
 }

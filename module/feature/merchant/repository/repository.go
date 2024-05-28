@@ -62,10 +62,11 @@ func (m *merchantsRepository) FindMerchantItemsByFilters(ctx context.Context, pa
 	query := ` 
 	SELECT * FROM merchant_items
 	WHERE 1 = 1
+	AND merchant_id = :merchant_id
 	`
 
 	if payload.ItemId != "" {
-		query += ` AND id = :id `
+		query += ` AND item_id = :item_id `
 	}
 
 	if payload.Name != "" {
@@ -132,7 +133,7 @@ func (m *merchantsRepository) FindMerchantByFilters(ctx context.Context, payload
 	`
 
 	if payload.MerchantId != "" {
-		query += ` AND id = :id `
+		query += ` AND merchant_id = :merchant_id `
 	}
 
 	if payload.Name != "" {

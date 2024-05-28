@@ -21,17 +21,17 @@ func prepareStatements() statements {
 		registerUser: statementutil.MustPrepare(
 			`INSERT INTO users (username, password, role, email)
 			VALUES ($1, $2, $3, $4)
-			RETURNING id`,
+			RETURNING user_id`,
 		),
 
 		findByUsernameAndRole: statementutil.MustPrepare(
-			`SELECT id, username, password, role, email
+			`SELECT user_id, username, password, role, email
 			FROM users
 			WHERE username = $1 AND role = $2`,
 		),
 
 		checkUser: statementutil.MustPrepare(
-			`SELECT EXISTS(SELECT 1 FROM users WHERE id = $1 AND username = $2 AND role = $3) AS user_exists`,
+			`SELECT EXISTS(SELECT 1 FROM users WHERE user_id = $1 AND username = $2 AND role = $3) AS user_exists`,
 		),
 	}
 }

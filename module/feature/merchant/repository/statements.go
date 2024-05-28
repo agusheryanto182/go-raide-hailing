@@ -27,14 +27,14 @@ func prepareStatements() statements {
 			:image_url,
 			:location_lat,
 			:location_long
-		) RETURNING id
+		) RETURNING merchant_id
 		`),
 
 		GetCountMerchant: statementutil.MustPrepare(`SELECT COUNT(*) FROM merchants`),
 
 		CreateMerchantItems: statementutil.MustPrepareNamed(`
 		WITH check_merchant AS (
-			SELECT EXISTS(SELECT 1 FROM merchants WHERE id = :merchant_id) AS merchant_exists
+			SELECT EXISTS(SELECT 1 FROM merchants WHERE merchant_id = :merchant_id) AS merchant_exists
 		)
 		INSERT INTO merchant_items (
 			merchant_id,
@@ -51,9 +51,9 @@ func prepareStatements() statements {
 			:image_url
 		FROM check_merchant
 		WHERE check_merchant.merchant_exists = true
-		RETURNING id		
+		RETURNING item_id		
 		`),
 
-		CheckMerchant: statementutil.MustPrepare(`SELECT EXISTS(SELECT 1 FROM merchants WHERE id = $1) AS merchant_exists`),
+		CheckMerchant: statementutil.MustPrepare(`SELECT EXISTS(SELECT 1 FROM merchants WHERE merchant_id = $1) AS merchant_exists`),
 	}
 }

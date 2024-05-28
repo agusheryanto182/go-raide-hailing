@@ -12,6 +12,10 @@ import (
 	imageService "github.com/agusheryanto182/go-raide-hailing/module/feature/image/service"
 	"github.com/go-playground/validator/v10"
 
+	purchaseController "github.com/agusheryanto182/go-raide-hailing/module/feature/purchase/controller"
+	purchaseRepo "github.com/agusheryanto182/go-raide-hailing/module/feature/purchase/repository"
+	purchaseService "github.com/agusheryanto182/go-raide-hailing/module/feature/purchase/service"
+
 	merchantController "github.com/agusheryanto182/go-raide-hailing/module/feature/merchant/controller"
 	merchantRepo "github.com/agusheryanto182/go-raide-hailing/module/feature/merchant/repository"
 	merchantService "github.com/agusheryanto182/go-raide-hailing/module/feature/merchant/service"
@@ -92,21 +96,24 @@ func main() {
 	// repo
 	userRepo := userRepo.NewUserRepository()
 	merchantRepo := merchantRepo.NewMerchantRepository(db)
+	purchaseRepo := purchaseRepo.NewPurchaseRepository(db)
 
 	// service
 	userService := userService.NewUserService(userRepo, jwt, hash)
 	imageService := imageService.NewImageService(awsConfig, cfg.AwsS3BucketName)
 	merchantService := merchantService.NewMerchantService(merchantRepo)
+	purchaseService := purchaseService.NewPurchaseService(purchaseRepo)
 
 	// controller
 	userController := userController.NewUserController(userService, valid)
 	imageController := imageController.NewImageController(imageService)
 	merchantController := merchantController.NewMerchantController(merchantService, valid)
+	purchaseController := purchaseController.NewPurchaseController(purchaseService, valid)
 
 	// route
 	routes.UserRoute(app, userController, jwt, userService)
 	routes.ImageRoute(app, imageController, jwt, userService)
-	routes.MerchantRoute(app, merchantController, jwt, userService)
+	routes.MerchantRoute(app, merchantController, purchaseController, jwt, userService)
 
 	logging.GetLogger("main").Info("Server running on " + fmt.Sprintf("%v:%v", cfg.ServerHost, cfg.ServerPort))
 	app.Listen(fmt.Sprintf("%v:%v", cfg.ServerHost, cfg.ServerPort))

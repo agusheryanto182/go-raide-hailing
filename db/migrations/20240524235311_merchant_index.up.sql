@@ -1,4 +1,4 @@
-CREATE INDEX IF NOT EXISTS merchant_id ON merchants (id);
+CREATE INDEX IF NOT EXISTS merchant_id ON merchants (merchant_id);
 CREATE INDEX IF NOT EXISTS merchant_name ON merchants (name);
 CREATE INDEX IF NOT EXISTS merchant_category_SmallRestaurant ON merchants (merchant_category) WHERE merchant_category = 'SmallRestaurant';
 CREATE INDEX IF NOT EXISTS merchant_category_MediumRestaurant ON merchants (merchant_category) WHERE merchant_category = 'MediumRestaurant';
@@ -8,7 +8,7 @@ CREATE INDEX IF NOT EXISTS merchant_category_BoothKiosk ON merchants (merchant_c
 CREATE INDEX IF NOT EXISTS merchant_category_ConvenienceStore ON merchants (merchant_category) WHERE merchant_category = 'ConvenienceStore';
 CREATE INDEX IF NOT EXISTS merchant_created_at ON merchants (created_at);
 
-CREATE INDEX IF NOT EXISTS merchant_item_id ON merchant_items (id);
+CREATE INDEX IF NOT EXISTS merchant_item_id ON merchant_items (item_id);
 CREATE INDEX IF NOT EXISTS merchant_item_merchant_id ON merchant_items (merchant_id);
 CREATE INDEX IF NOT EXISTS merchant_item_name ON merchant_items (name);
 CREATE INDEX IF NOT EXISTS merchant_item_product_category_Beverage ON merchant_items (product_category) WHERE product_category = 'Beverage';

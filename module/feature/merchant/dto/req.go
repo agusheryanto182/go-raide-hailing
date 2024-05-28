@@ -13,7 +13,7 @@ type ReqCreateMerchant struct {
 }
 
 type ReqGetMerchantByFilters struct {
-	MerchantId       string `json:"merchantId" db:"id"`
+	MerchantId       string `json:"merchantId" db:"merchant_id"`
 	Name             string `json:"name" db:"name"`
 	MerchantCategory string `json:"merchantCategory" db:"merchant_category"`
 	CreatedAt        string `json:"createdAt" db:"created_at"`
@@ -30,7 +30,7 @@ type ReqCreateMerchantItem struct {
 }
 
 type ReqGetMerchantItemsByFilters struct {
-	ItemId          string `json:"itemId" db:"id"`
+	ItemId          string `json:"itemId" db:"item_id"`
 	MerchantId      string `json:"merchantId" db:"merchant_id"`
 	Name            string `json:"name" db:"name"`
 	ProductCategory string `json:"productCategory" db:"product_category"`
