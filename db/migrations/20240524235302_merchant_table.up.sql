@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS merchant_items (
     merchant_id uuid REFERENCES merchants(merchant_id),
     name VARCHAR(30) NOT NULL,
     product_category VARCHAR(30) NOT NULL,
-    price int NOT NULL,
+    price int NOT NULL CHECK (price >= 1),
     image_url VARCHAR NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
