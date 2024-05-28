@@ -21,6 +21,9 @@ func (p *purchaseController) GetNearbyMerchants(ctx *fiber.Ctx) error {
 	coords := ctx.Params("coords")
 
 	coordParts := strings.Split(coords, ",")
+	if len(coordParts) != 2 {
+		return customErr.NewBadRequestError("Invalid coordinates")
+	}
 
 	lat, err := strconv.ParseFloat(coordParts[0], 64)
 	if err != nil {
