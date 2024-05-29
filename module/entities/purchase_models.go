@@ -1,10 +1,13 @@
 package entities
 
-type Purchase struct {
-	ID         string `db:"order_id" json:"orderId"`
-	UserId     string `db:"user_id" json:"userId"`
-	MerchantId string `db:"merchant_id" json:"merchantId"`
-	ItemId     string `db:"item_id" json:"itemId"`
+type Estimate struct {
+	EstimateId            string  `db:"estimate_id" json:"estimateId"`
+	UserId                string  `db:"user_id" json:"userId"`
+	UserLat               float64 `db:"user_lat" json:"userLat"`
+	UserLon               float64 `db:"user_lon" json:"userLon"`
+	TotalPrice            int     `db:"total_price" json:"totalPrice"`
+	EstimatedDeliveryTime int     `db:"estimated_delivery_time" json:"estimatedDeliveryTime"`
+	CreatedAt             string  `db:"created_at" json:"createdAt"`
 }
 
 type NearbyMerchant struct {

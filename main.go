@@ -113,7 +113,8 @@ func main() {
 	// route
 	routes.UserRoute(app, userController, jwt, userService)
 	routes.ImageRoute(app, imageController, jwt, userService)
-	routes.MerchantRoute(app, merchantController, purchaseController, jwt, userService)
+	routes.MerchantRoute(app, merchantController, jwt, userService)
+	routes.PurchaseRoute(app, purchaseController, jwt, userService)
 
 	logging.GetLogger("main").Info("Server running on " + fmt.Sprintf("%v:%v", cfg.ServerHost, cfg.ServerPort))
 	app.Listen(fmt.Sprintf("%v:%v", cfg.ServerHost, cfg.ServerPort))

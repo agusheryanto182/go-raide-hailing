@@ -69,6 +69,8 @@ func ProtectedWithRole(jwtService jwt.JWTInterface, userService user.UserService
 			return customErr.NewUnauthorizedError(fmt.Sprintf("Access denied: role is not %s but %s", role, payload.Role))
 		}
 
+		c.Locals("CurrentUser", payload)
+
 		return c.Next()
 	}
 }

@@ -26,13 +26,15 @@ func ImageRoute(app *fiber.App, controller image.ImageControllerInterface, jwtSe
 	image.Post("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.UploadImage)
 }
 
-func MerchantRoute(app *fiber.App, controller merchant.MerchantControllerInterface, controllerPurchase purchase.PurchaseControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
+func MerchantRoute(app *fiber.App, controller merchant.MerchantControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
 	merchantAdmin := app.Group("/admin/merchants")
 	merchantAdmin.Post("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.CreateMerchant)
 	merchantAdmin.Get("", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.GetMerchantByFilters)
 	merchantAdmin.Post("/:merchantId/items", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.CreateMerchantItems)
 	merchantAdmin.Get("/:merchantId/items", middleware.ProtectedWithRole(jwtService, userService, entities.RoleAdmin), controller.GetMerchantItemsByFilters)
+}
 
-	merchantUser := app.Group("/merchants")
-	merchantUser.Get("/nearby/:coords", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controllerPurchase.GetNearbyMerchants)
+func PurchaseRoute(app *fiber.App, controller purchase.PurchaseControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
+	app.Get("/merchants/nearby/:coords", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controller.GetNearbyMerchants)
+	app.Post("/users/estimate", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controller.PostEstimate)
 }
