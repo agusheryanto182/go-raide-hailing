@@ -38,7 +38,7 @@ func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *d
         )
     ) AS distance
 	FROM merchants m
-	LEFT JOIN merchant_items i ON m.merchant_id = i.merchant_id
+	JOIN merchant_items i ON m.merchant_id = i.merchant_id
 	WHERE 1 = 1
 	`
 
