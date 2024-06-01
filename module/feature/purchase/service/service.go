@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sort"
 
 	"github.com/agusheryanto182/go-raide-hailing/module/entities"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/purchase"
@@ -60,8 +61,32 @@ func (p *purchaseService) PostEstimate(ctx context.Context, payload *dto.ReqPost
 }
 
 // GetNearbyMerchants implements purchase.PurchaseServiceInterface.
-func (p *purchaseService) GetNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]entities.NearbyMerchant, error) {
-	return p.purchaseRepository.FindNearbyMerchants(ctx, payload)
+func (p *purchaseService) GetNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]*entities.NearbyMerchant, error) {
+	result, err := p.purchaseRepository.FindNearbyMerchants(ctx, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range result {
+		result[i].Merchant.Distance = helper.Haversine(payload.UserLat, payload.UserLong, result[i].Merchant.Location.Latitude, result[i].Merchant.Location.Longitude)
+	}
+
+	// sort
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Merchant.Distance < result[j].Merchant.Distance
+	})
+
+	// limit
+	if len(result) > payload.Limit {
+		result = result[:payload.Limit]
+	}
+
+	// offset
+	if payload.Offset < len(result) {
+		result = result[payload.Offset:]
+	}
+
+	return result, nil
 }
 
 func NewPurchaseService(purchaseRepository purchase.PurchaseRepositoryInterface) purchase.PurchaseServiceInterface {

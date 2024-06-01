@@ -17,6 +17,7 @@ type NearbyMerchant struct {
 		MerchantCategory string   `db:"merchant_category" json:"merchantCategory"`
 		ImageUrl         string   `db:"image_url" json:"imageUrl"`
 		Location         Location `json:"location"`
+		Distance         float64  `json:"-"`
 		CreatedAt        string   `db:"created_at" json:"createdAt"`
 	} `json:"merchant"`
 	Items []struct {

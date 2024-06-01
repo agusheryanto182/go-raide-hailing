@@ -94,6 +94,16 @@ func (p *purchaseController) GetNearbyMerchants(ctx *fiber.Ctx) error {
 		req.Limit = 5
 	}
 
+	if req.Name != "" {
+		cleanedName := strings.ReplaceAll(req.Name, "\"", "")
+		req.Name = cleanedName
+	}
+
+	if req.MerchantCategory != "" {
+		cleanedMerchantCategory := strings.ReplaceAll(req.MerchantCategory, "\"", "")
+		req.MerchantCategory = cleanedMerchantCategory
+	}
+
 	results, err := p.purchaseService.GetNearbyMerchants(ctx.Context(), req)
 	if err != nil {
 		return err

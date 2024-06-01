@@ -88,7 +88,7 @@ func (p *purchaseRepository) PostEstimate(ctx context.Context, merchantUUIDParam
 }
 
 // FindNearbyMerchants implements purchase.PurchaseRepositoryInterface.
-func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]entities.NearbyMerchant, error) {
+func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]*entities.NearbyMerchant, error) {
 	query := `
 	SELECT
     m.merchant_id,
@@ -98,41 +98,29 @@ func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *d
     m.location_lat,
     m.location_long,
     m.created_at,
-	COALESCE(json_agg(i) FILTER (WHERE i.item_id IS NOT NULL), '[]') AS items,
-    (
-        6371 *
-        acos(
-            cos(radians(:user_lat)) *
-            cos(radians(location_lat)) *
-            cos(radians(location_long) - radians(:user_long)) +
-            sin(radians(:user_lat)) *
-            sin(radians(location_lat))
-        )
-    ) AS distance
+	COALESCE(json_agg(i) FILTER (WHERE i.item_id IS NOT NULL), '[]') AS items
 	FROM merchants m
 	JOIN merchant_items i ON m.merchant_id = i.merchant_id
 	WHERE 1 = 1
 	`
 
 	if payload.MerchantId != "" {
-		query += ` AND merchant_id = :merchant_id `
+		query += ` AND m.merchant_id = :merchant_id `
 	}
 
 	if payload.Name != "" {
-		query += ` AND name ILIKE '%' || :name || '%' `
+		query += ` AND m.name ILIKE '%' || :name || '%' `
 	}
 
 	if payload.MerchantCategory != "" {
-		query += ` AND merchant_category = :merchant_category `
+		query += ` AND m.merchant_category = :merchant_category `
 	}
 
 	query += ` 
         GROUP BY m.merchant_id
-        ORDER BY distance 
-        LIMIT :limit OFFSET :offset 
     `
 
-	var merchants []entities.NearbyMerchant
+	merchants := []*entities.NearbyMerchant{}
 	rows, err := p.db.NamedQueryContext(ctx, query, payload)
 
 	if err != nil {
@@ -143,11 +131,11 @@ func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *d
 
 	for rows.Next() {
 		var (
-			merchant     entities.NearbyMerchant
 			itemsJSONStr string
-			distance     float64
 			items        []dto.TempItems
 		)
+
+		merchant := &entities.NearbyMerchant{}
 
 		if err := rows.Scan(
 			&merchant.Merchant.ID,
@@ -158,7 +146,6 @@ func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *d
 			&merchant.Merchant.Location.Longitude,
 			&merchant.Merchant.CreatedAt,
 			&itemsJSONStr,
-			&distance,
 		); err != nil {
 			return nil, customErr.NewInternalServerError(err.Error())
 		}

@@ -9,13 +9,13 @@ import (
 )
 
 type PurchaseRepositoryInterface interface {
-	FindNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]entities.NearbyMerchant, error)
+	FindNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]*entities.NearbyMerchant, error)
 	PostEstimate(ctx context.Context, merchantUUIDParams []string, itemParams *dto.ItemParams) ([]*dto.ResEstimateMerchant, []*dto.ResEstimateItem, error)
 	CreateEstimate(ctx context.Context, estimate *entities.Estimate) (string, error)
 }
 
 type PurchaseServiceInterface interface {
-	GetNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]entities.NearbyMerchant, error)
+	GetNearbyMerchants(ctx context.Context, payload *dto.ReqNearbyMerchants) ([]*entities.NearbyMerchant, error)
 	PostEstimate(ctx context.Context, payload *dto.ReqPostEstimate) (*dto.ResPostEstimate, error)
 }
 
