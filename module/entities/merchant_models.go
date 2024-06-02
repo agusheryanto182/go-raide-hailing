@@ -6,8 +6,8 @@ type Merchant struct {
 	MerchantCategory string   `db:"merchant_category" json:"merchantCategory"`
 	ImageUrl         string   `db:"image_url" json:"imageUrl"`
 	Location         Location `json:"location"`
-	LocationLat      float64  `db:"location_lat"`
-	LocationLong     float64  `db:"location_long"`
+	LocationLat      float64  `db:"location_lat" json:"-"`
+	LocationLong     float64  `db:"location_long" json:"-"`
 	CreatedAt        string   `db:"created_at" json:"createdAt"`
 }
 

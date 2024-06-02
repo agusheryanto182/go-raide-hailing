@@ -15,6 +15,16 @@ type purchaseService struct {
 	purchaseRepository purchase.PurchaseRepositoryInterface
 }
 
+// GetOrders implements purchase.PurchaseServiceInterface.
+func (p *purchaseService) GetOrders(ctx context.Context, payload *dto.ReqGetOrders) ([]*dto.ResGetOrders, error) {
+	return p.purchaseRepository.GetOrders(ctx, payload)
+}
+
+// PostOrders implements purchase.PurchaseServiceInterface.
+func (p *purchaseService) PostOrders(ctx context.Context, payload *dto.ReqPostOrders) (string, error) {
+	return p.purchaseRepository.PostOrders(ctx, payload)
+}
+
 // PostEstimate implements purchase.PurchaseServiceInterface.
 func (p *purchaseService) PostEstimate(ctx context.Context, payload *dto.ReqPostEstimate) (*dto.ResPostEstimate, error) {
 	var merchantUUIDParams []string
@@ -37,7 +47,7 @@ func (p *purchaseService) PostEstimate(ctx context.Context, payload *dto.ReqPost
 	res := &dto.ResPostEstimate{}
 	res.TotalPrice, res.EstimatedDeliveryTimeInMinutes, err = helper.CalculateTotalPriceAndDeliveryTime(merchants, items, payload.UserLocation.Lat, payload.UserLocation.Long)
 	if err != nil {
-		return nil, customErr.NewBadRequestError("failed to calculate total price and delivery time : " + err.Error())
+		return nil, customErr.NewBadRequestError(err.Error())
 	}
 
 	estimateId, err := p.purchaseRepository.CreateEstimate(ctx, &entities.Estimate{
@@ -49,6 +59,12 @@ func (p *purchaseService) PostEstimate(ctx context.Context, payload *dto.ReqPost
 	})
 
 	if err != nil {
+		return nil, err
+	}
+
+	payload.EstimateId = estimateId
+
+	if err := p.purchaseRepository.SaveOrderItems(ctx, payload); err != nil {
 		return nil, err
 	}
 

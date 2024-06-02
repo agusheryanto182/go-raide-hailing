@@ -37,4 +37,6 @@ func MerchantRoute(app *fiber.App, controller merchant.MerchantControllerInterfa
 func PurchaseRoute(app *fiber.App, controller purchase.PurchaseControllerInterface, jwtService jwt.JWTInterface, userService user.UserServiceInterface) {
 	app.Get("/merchants/nearby/:coords", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controller.GetNearbyMerchants)
 	app.Post("/users/estimate", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controller.PostEstimate)
+	app.Post("/users/orders", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controller.PostOrders)
+	app.Get("/users/orders", middleware.ProtectedWithRole(jwtService, userService, entities.RoleUser), controller.GetOrders)
 }

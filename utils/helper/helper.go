@@ -4,27 +4,7 @@ import (
 	"math"
 
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/purchase/dto"
-	"github.com/agusheryanto182/go-raide-hailing/utils/customErr"
 )
-
-func CalculateDistance(lat1, lon1, lat2, lon2 float64) (float64, error) {
-	const R = 6371 // Radius of the Earth in km
-	dLat := (lat2 - lat1) * (math.Pi / 180)
-	dLon := (lon2 - lon1) * (math.Pi / 180)
-
-	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
-		math.Cos(lat1*(math.Pi/180))*math.Cos(lat2*(math.Pi/180))*
-			math.Sin(dLon/2)*math.Sin(dLon/2)
-
-	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-
-	distance := R * c
-	if distance > 3 {
-		return 0, customErr.NewBadRequestError("distance is too large")
-	}
-
-	return distance, nil
-}
 
 func Haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371 // Earth radius in kilometers
@@ -43,10 +23,13 @@ func CalculateTotalPriceAndDeliveryTime(merchant []*dto.ResEstimateMerchant, ite
 
 	for _, val := range merchant {
 		// Calculate distance from user location to merchant
-		distance, err := CalculateDistance(userLat, userLong, val.LocationLat, val.LocationLong)
-		if err != nil {
-			return 0, 0, err
-		}
+		distance := Haversine(userLat, userLong, val.LocationLat, val.LocationLong)
+
+		// maxDistance := math.Sqrt(3) // 1.7320508075688772km
+		// if distance > maxDistance {
+		// 	return 0, 0, customErr.NewBadRequestError("merchant is too far away")
+		// }
+
 		if distance > currDistance {
 			currDistance = distance
 		}

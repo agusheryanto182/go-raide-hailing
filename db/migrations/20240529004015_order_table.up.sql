@@ -9,3 +9,10 @@ CREATE TABLE IF NOT EXISTS estimates(
 );
 
 CREATE INDEX IF NOT EXISTS estimates_estimate_id ON estimates (estimate_id);    
+
+CREATE TABLE IF NOT EXISTS orders(
+    order_id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+    estimate_id uuid NOT NULL REFERENCES estimates(estimate_id),
+    user_id uuid NOT NULL REFERENCES users(user_id),
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

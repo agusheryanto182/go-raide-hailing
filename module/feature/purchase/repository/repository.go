@@ -18,6 +18,178 @@ type purchaseRepository struct {
 	statements statements
 }
 
+func (p *purchaseRepository) GetOrders(ctx context.Context, payload *dto.ReqGetOrders) ([]*dto.ResGetOrders, error) {
+	query := `
+        SELECT
+            order_id,
+            estimate_id,
+            user_id
+        FROM
+            orders
+        WHERE
+            user_id = $1
+    `
+	res := []*dto.ResGetOrders{}
+	tempOrders := []*dto.TempOrders{}
+
+	rows, err := p.db.QueryxContext(ctx, query, payload.UserId)
+	if err != nil {
+		return nil, customErr.NewInternalServerError("failed to get orders : " + err.Error())
+	}
+	defer rows.Close()
+	for rows.Next() {
+		r := &dto.TempOrders{}
+		if err := rows.StructScan(&r); err != nil {
+			return nil, customErr.NewInternalServerError("failed to get orders : " + err.Error())
+		}
+		tempOrders = append(tempOrders, r)
+	}
+
+	for i := range tempOrders {
+		rows, err := p.statements.GetDetailOrders.QueryxContext(ctx, tempOrders[i].OrderId)
+		if err != nil {
+			return nil, customErr.NewInternalServerError("failed to get merchants: " + err.Error())
+		}
+		defer rows.Close()
+
+		var (
+			orderIitemsJSONStr string
+			merchantJSONStr    string
+			itemsJSONStr       string
+		)
+
+		for rows.Next() {
+			if err := rows.Scan(
+				&orderIitemsJSONStr,
+				&merchantJSONStr,
+				&itemsJSONStr,
+			); err != nil {
+				return nil, customErr.NewInternalServerError("failed to scan merchants: " + err.Error())
+			}
+
+			orderItems := []*dto.TempOrderItems{}
+			if err := json.Unmarshal([]byte(orderIitemsJSONStr), &orderItems); err != nil {
+				return nil, customErr.NewInternalServerError("failed to unmarshal order items: " + err.Error())
+			}
+			merchants := []*dto.TempMerchant{}
+			if err := json.Unmarshal([]byte(merchantJSONStr), &merchants); err != nil {
+				return nil, customErr.NewInternalServerError("failed to unmarshal merchants: " + err.Error())
+			}
+			items := []*dto.TempItems{}
+			if err := json.Unmarshal([]byte(itemsJSONStr), &items); err != nil {
+				return nil, customErr.NewInternalServerError("failed to unmarshal items: " + err.Error())
+			}
+
+			if len(orderItems) != len(merchants) || len(orderItems) != len(items) {
+				return nil, customErr.NewInternalServerError("length of order items, merchants, and items do not match")
+			}
+
+			merchantMap := make(map[string]*dto.Orders)
+			itemMap := make(map[string]bool) // declare itemMap here
+			for _, orderItem := range orderItems {
+				merchantID := orderItem.MerchantId
+				if _, ok := merchantMap[merchantID]; !ok {
+					merchant := findMerchantByID(merchants, merchantID)
+					if merchant == nil {
+						return nil, customErr.NewInternalServerError("failed to find merchant with ID " + merchantID)
+					}
+					merchantMap[merchantID] = &dto.Orders{
+						Merchant: &entities.Merchant{
+							ID:               merchant.ID,
+							Name:             merchant.Name,
+							MerchantCategory: merchant.MerchantCategory,
+							ImageUrl:         merchant.ImageUrl,
+							Location: entities.Location{
+								Latitude:  merchant.LocationLat,
+								Longitude: merchant.LocationLong,
+							},
+							CreatedAt: merchant.CreatedAt,
+						},
+						Items: []*dto.Items{},
+					}
+				}
+				itemID := orderItem.MerchantItemId
+				if _, ok := itemMap[itemID]; !ok {
+					for _, item := range items {
+						if item.MerchantId == orderItem.MerchantId && item.ID == itemID {
+							merchantMap[merchantID].Items = append(merchantMap[merchantID].Items, &dto.Items{
+								ID:              item.ID,
+								Name:            item.Name,
+								ProductCategory: item.ProductCategory,
+								Price:           item.Price,
+								Quantity:        orderItem.Quantity,
+								ImageUrl:        item.ImageUrl,
+								CreatedAt:       item.CreatedAt,
+							})
+							itemMap[itemID] = true
+							break
+						}
+					}
+				}
+			}
+
+			resItem := &dto.ResGetOrders{
+				OrderId: tempOrders[i].OrderId,
+				Orders:  []*dto.Orders{},
+			}
+			for _, orders := range merchantMap {
+				resItem.Orders = append(resItem.Orders, orders)
+			}
+
+			res = append(res, resItem)
+		}
+	}
+
+	return res, nil
+}
+
+func findMerchantByID(merchants []*dto.TempMerchant, id string) *dto.TempMerchant {
+	for _, merchant := range merchants {
+		if merchant.ID == id {
+			return merchant
+		}
+	}
+	return nil
+}
+
+// PostOrders implements purchase.PurchaseRepositoryInterface.
+func (p *purchaseRepository) PostOrders(ctx context.Context, payload *dto.ReqPostOrders) (string, error) {
+	var id string
+	if err := p.statements.CreateOrders.QueryRowxContext(ctx, payload).Scan(&id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", customErr.NewNotFoundError("calculatedEstimatedId is not found : " + err.Error())
+		}
+		return "", customErr.NewInternalServerError("failed to post orders : " + err.Error())
+	}
+
+	payload.OrderId = id
+	rows := p.statements.PostOrders.MustExecContext(ctx, payload)
+	_, err := rows.RowsAffected()
+	if err != nil {
+		return "", customErr.NewInternalServerError("rows affected : " + err.Error())
+	}
+
+	return id, nil
+}
+
+// SaveOrderItems implements purchase.PurchaseRepositoryInterface.
+func (p *purchaseRepository) SaveOrderItems(ctx context.Context, payload *dto.ReqPostEstimate) error {
+	for _, order := range payload.Orders {
+		currMerchant := order.MerchantId
+		estimateId := payload.EstimateId
+
+		for _, item := range order.Items {
+			row := p.statements.SaveOrderItemsWithoutOrderId.MustExecContext(ctx, estimateId, currMerchant, item.ItemId, item.Quantity)
+			_, err := row.RowsAffected()
+			if err != nil {
+				return customErr.NewInternalServerError("rows affected : " + err.Error())
+			}
+		}
+	}
+
+	return nil
+}
+
 // CreateEstimate implements purchase.PurchaseRepositoryInterface.
 func (p *purchaseRepository) CreateEstimate(ctx context.Context, estimate *entities.Estimate) (string, error) {
 	var id string
@@ -100,7 +272,7 @@ func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *d
     m.created_at,
 	COALESCE(json_agg(i) FILTER (WHERE i.item_id IS NOT NULL), '[]') AS items
 	FROM merchants m
-	JOIN merchant_items i ON m.merchant_id = i.merchant_id
+	LEFT JOIN merchant_items i ON m.merchant_id = i.merchant_id
 	WHERE 1 = 1
 	`
 
@@ -132,7 +304,7 @@ func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *d
 	for rows.Next() {
 		var (
 			itemsJSONStr string
-			items        []dto.TempItems
+			items        = []*dto.TempItems{}
 		)
 
 		merchant := &entities.NearbyMerchant{}
@@ -153,15 +325,24 @@ func (p *purchaseRepository) FindNearbyMerchants(ctx context.Context, payload *d
 			return nil, customErr.NewInternalServerError(err.Error())
 		}
 
+		if len(items) == 0 {
+			merchant.Items = []entities.Item{}
+		}
+
 		for i := 0; i < len(items); i++ {
-			merchant.Items = append(merchant.Items, struct {
-				ID              string "json:\"itemId\""
-				Name            string "json:\"name\""
-				ProductCategory string "json:\"productCategory\""
-				Price           int    "json:\"price\""
-				ImageUrl        string "json:\"imageUrl\""
-				CreatedAt       string "json:\"createdAt\""
-			}(items[i]))
+			if items[i] == nil || len(items) == 0 {
+				merchant.Items = []entities.Item{}
+				continue
+			}
+
+			merchant.Items = append(merchant.Items, entities.Item{
+				ID:              items[i].ID,
+				Name:            items[i].Name,
+				ProductCategory: items[i].ProductCategory,
+				Price:           items[i].Price,
+				ImageUrl:        items[i].ImageUrl,
+				CreatedAt:       items[i].CreatedAt,
+			})
 		}
 
 		merchants = append(merchants, merchant)

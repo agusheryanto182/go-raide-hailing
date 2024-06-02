@@ -18,6 +18,56 @@ type purchaseController struct {
 	validator       *validator.Validate
 }
 
+// GetOrders implements purchase.PurchaseControllerInterface.
+func (p *purchaseController) GetOrders(ctx *fiber.Ctx) error {
+	currentUser := ctx.Locals("CurrentUser").(*jwt.JWTPayload)
+
+	req := new(dto.ReqGetOrders)
+	req.UserId = currentUser.Id
+
+	if err := ctx.QueryParser(req); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
+	if req.MerchantCategory != "" {
+		if err := p.validator.Struct(req); err != nil {
+			return customErr.NewBadRequestError(err.Error())
+		}
+	}
+
+	if req.Limit == 0 {
+		req.Limit = 5
+	}
+
+	result, err := p.purchaseService.GetOrders(ctx.Context(), req)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(result)
+}
+
+// PostOrders implements purchase.PurchaseControllerInterface.
+func (p *purchaseController) PostOrders(ctx *fiber.Ctx) error {
+	currentUser := ctx.Locals("CurrentUser").(*jwt.JWTPayload)
+
+	req := new(dto.ReqPostOrders)
+	req.UserId = currentUser.Id
+
+	if err := ctx.BodyParser(req); err != nil {
+		return customErr.NewBadRequestError(err.Error())
+	}
+
+	result, err := p.purchaseService.PostOrders(ctx.Context(), req)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"orderId": result,
+	})
+}
+
 // PostEstimate implements purchase.PurchaseControllerInterface.
 func (p *purchaseController) PostEstimate(ctx *fiber.Ctx) error {
 	currentUser := ctx.Locals("CurrentUser").(*jwt.JWTPayload)

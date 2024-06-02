@@ -23,11 +23,27 @@ type ReqPostEstimate struct {
 			Quantity int    `json:"quantity" validate:"required"`
 		}
 	}
-	UserId string
+	UserId     string
+	EstimateId string
 }
 
 type ItemParams struct {
 	ItemIDParams []string
 	MerchantId   []string
 	Quantity     []int
+}
+
+type ReqPostOrders struct {
+	EstimateId string `json:"calculatedEstimateId" db:"estimate_id"`
+	UserId     string `json:"userId" db:"user_id"`
+	OrderId    string `json:"orderId" db:"order_id"`
+}
+
+type ReqGetOrders struct {
+	MerchantId       string `json:"merchantId"`
+	Name             string `json:"name"`
+	MerchantCategory string `json:"merchantCategory" validate:"oneof=SmallRestaurant MediumRestaurant LargeRestaurant MerchandiseRestaurant BoothKiosk ConvenienceStore"`
+	Limit            int    `json:"limit"`
+	Offset           int    `json:"offset"`
+	UserId           string
 }

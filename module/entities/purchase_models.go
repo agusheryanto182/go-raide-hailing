@@ -20,12 +20,24 @@ type NearbyMerchant struct {
 		Distance         float64  `json:"-"`
 		CreatedAt        string   `db:"created_at" json:"createdAt"`
 	} `json:"merchant"`
-	Items []struct {
-		ID              string `json:"itemId"`
-		Name            string `json:"name"`
-		ProductCategory string `json:"productCategory"`
-		Price           int    `json:"price"`
-		ImageUrl        string `json:"imageUrl"`
-		CreatedAt       string `json:"createdAt"`
-	} `json:"items"`
+	Items []Item `json:"items"`
+}
+
+type Item struct {
+	ID              string `json:"itemId"`
+	Name            string `json:"name"`
+	ProductCategory string `json:"productCategory"`
+	Price           int    `json:"price"`
+	ImageUrl        string `json:"imageUrl"`
+	CreatedAt       string `json:"createdAt"`
+}
+
+type OrderItems struct {
+	OrderItemId    string `db:"order_item_id" json:"orderItemId"`
+	OrderId        string `db:"order_id" json:"orderId"`
+	MerchantId     string `db:"merchant_id" json:"merchantId"`
+	MerchantItemId string `db:"merchant_item_id" json:"merchantItemId"`
+	Price          int    `db:"price" json:"price"`
+	Quantity       int    `db:"quantity" json:"quantity"`
+	CreatedAt      string `db:"created_at" json:"createdAt"`
 }

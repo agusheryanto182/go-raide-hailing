@@ -1,1 +1,5 @@
 DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS estimates;
+DROP INDEX IF EXISTS estimates_estimate_id;
+DROP TABLE IF EXISTS users;
