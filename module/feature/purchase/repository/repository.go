@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"github.com/agusheryanto182/go-raide-hailing/module/entities"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/purchase"
@@ -140,7 +141,60 @@ func (p *purchaseRepository) GetOrders(ctx context.Context, payload *dto.ReqGetO
 		}
 	}
 
-	return res, nil
+	filteredRes := make([]*dto.ResGetOrders, 0, len(res))
+
+	for _, order := range res {
+		filteredOrder := &dto.ResGetOrders{
+			OrderId: order.OrderId,
+			Orders:  make([]*dto.Orders, 0),
+		}
+
+		for _, merchant := range order.Orders {
+			if payload.MerchantId != "" && merchant.Merchant.ID != payload.MerchantId {
+				continue
+			}
+			if payload.Name != "" && !strings.Contains(strings.ToLower(merchant.Merchant.Name), strings.ToLower(payload.Name)) {
+				continue
+			}
+			if payload.MerchantCategory != "" && merchant.Merchant.MerchantCategory != payload.MerchantCategory {
+				continue
+			}
+
+			filteredMerchant := &dto.Orders{
+				Merchant: merchant.Merchant,
+				Items:    make([]*dto.Items, 0),
+			}
+
+			for _, item := range merchant.Items {
+				if payload.Name != "" && !strings.Contains(strings.ToLower(item.Name), strings.ToLower(payload.Name)) {
+					continue
+				}
+				filteredMerchant.Items = append(filteredMerchant.Items, item)
+			}
+
+			if len(filteredMerchant.Items) > 0 {
+				filteredOrder.Orders = append(filteredOrder.Orders, filteredMerchant)
+			}
+		}
+
+		if len(filteredOrder.Orders) > 0 {
+			filteredRes = append(filteredRes, filteredOrder)
+		}
+	}
+
+	if len(filteredRes) == 0 {
+		return []*dto.ResGetOrders{}, nil
+	}
+
+	if payload.Limit > 0 && payload.Offset >= 0 {
+		if payload.Limit+payload.Offset > len(filteredRes) {
+			filteredRes = filteredRes[payload.Offset:]
+		} else {
+			filteredRes = filteredRes[payload.Offset : payload.Limit+payload.Offset]
+		}
+	}
+
+	return filteredRes, nil
 }
 
 func findMerchantByID(merchants []*dto.TempMerchant, id string) *dto.TempMerchant {
