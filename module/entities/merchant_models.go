@@ -25,3 +25,21 @@ type MerchantItem struct {
 	ImageUrl        string `db:"image_url" json:"imageUrl"`
 	CreatedAt       string `db:"created_at" json:"createdAt"`
 }
+
+const (
+	SmallRestaurant       = "SmallRestaurant"
+	MediumRestaurant      = "MediumRestaurant"
+	LargeRestaurant       = "LargeRestaurant"
+	MerchandiseRestaurant = "MerchandiseRestaurant"
+	BoothKiosk            = "BoothKiosk"
+	ConvenienceStore      = "ConvenienceStore"
+)
+
+var ValidCategoriesMerchant = map[string]bool{
+	SmallRestaurant:       true,
+	MediumRestaurant:      true,
+	LargeRestaurant:       true,
+	MerchandiseRestaurant: true,
+	BoothKiosk:            true,
+	ConvenienceStore:      true,
+}

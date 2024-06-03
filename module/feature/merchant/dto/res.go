@@ -9,10 +9,10 @@ type Meta struct {
 }
 
 type ResGetMerchant struct {
-	ID               string            `db:"id" json:"id"`
+	ID               string            `db:"id" json:"merchantId"`
 	Name             string            `db:"name" json:"name"`
-	MerchantCategory string            `db:"merchant_category" json:"merchant_category"`
-	ImageUrl         string            `db:"image_url" json:"image_url"`
+	MerchantCategory string            `db:"merchant_category" json:"merchantCategory"`
+	ImageUrl         string            `db:"image_url" json:"imageUrl"`
 	Location         entities.Location `db:"location" json:"location"`
-	CreatedAt        string            `db:"created_at" json:"created_at"`
+	CreatedAt        string            `db:"created_at" json:"createdAt"`
 }

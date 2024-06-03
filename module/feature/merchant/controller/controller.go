@@ -3,6 +3,7 @@ package controller
 import (
 	"strings"
 
+	"github.com/agusheryanto182/go-raide-hailing/module/entities"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/merchant"
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/merchant/dto"
 	"github.com/agusheryanto182/go-raide-hailing/utils/customErr"
@@ -84,8 +85,28 @@ func (m *merchantController) GetMerchantByFilters(ctx *fiber.Ctx) error {
 	cleanedMerchantId := strings.ReplaceAll(req.MerchantId, "\"", "")
 	req.MerchantId = cleanedMerchantId
 
-	if strings.ToUpper(req.CreatedAt) != "ASC" && strings.ToUpper(req.CreatedAt) != "DESC" {
-		req.CreatedAt = "DESC"
+	if req.Name != "" {
+		cleanedName := strings.ReplaceAll(req.Name, "\"", "")
+		req.Name = cleanedName
+	}
+
+	if req.MerchantCategory != "" {
+		cleanedMerchantCategory := strings.ReplaceAll(req.MerchantCategory, "\"", "")
+		if !entities.ValidCategoriesMerchant[cleanedMerchantCategory] {
+			return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
+				"data": []*dto.ResGetMerchant{},
+			})
+		}
+		req.MerchantCategory = cleanedMerchantCategory
+	}
+
+	if req.CreatedAt == "" {
+		cleanedCreatedAt := strings.ReplaceAll(req.CreatedAt, "\"", "")
+		if strings.ToUpper(cleanedCreatedAt) != "ASC" && strings.ToUpper(cleanedCreatedAt) != "DESC" {
+			req.CreatedAt = "DESC"
+		} else {
+			req.CreatedAt = cleanedCreatedAt
+		}
 	}
 
 	if req.Limit == 0 {
