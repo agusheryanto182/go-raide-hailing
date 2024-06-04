@@ -2,22 +2,30 @@ package database
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/agusheryanto182/go-raide-hailing/config"
-	"github.com/agusheryanto182/go-raide-hailing/utils/logging"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
-func InitDatabase(cfg config.Global) (*sqlx.DB, error) {
+func InitDatabase(cfg *config.Global) (*sqlx.DB, error) {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?%s",
+		cfg.Database.Username,
+		cfg.Database.Password,
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.DbName,
+		cfg.Database.Params,
+	)
 
-	db, err := sqlx.Connect("pgx", cfg.DbString)
+	db, err := sqlx.Connect("pgx", dsn)
 
-	db.SetMaxOpenConns(cfg.DbMaxOpenConns)
-	db.SetConnMaxIdleTime(cfg.DbMaxConnIdleTime)
-	// db.SetMaxIdleConns(cfg.DbMaxIdleConns)
-	// db.SetConnMaxLifetime(cfg.DbMaxConnLifetime)
+	db.SetMaxOpenConns(30)
+	db.SetMaxIdleConns(15)
+	db.SetConnMaxLifetime(0)
 
-	logging.GetLogger("db").Debug(fmt.Sprintf("Connected to database: %s", cfg.DbString))
+	log.Println("Database connected")
+
 	return db, err
 }

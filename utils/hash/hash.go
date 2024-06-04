@@ -11,17 +11,17 @@ type HashInterface interface {
 }
 
 type Hash struct {
-	cfg config.Global
+	cfg *config.Global
 }
 
-func NewHash(cfg config.Global) HashInterface {
+func NewHash(cfg *config.Global) HashInterface {
 	return &Hash{
 		cfg: cfg,
 	}
 }
 
 func (h *Hash) HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), h.cfg.BcryptSaltCost)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), h.cfg.Bcrypt.Salt)
 	return string(bytes), err
 }
 

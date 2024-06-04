@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	fiberLogger "github.com/gofiber/fiber/v2/middleware/logger"
@@ -42,16 +42,7 @@ func main() {
 		ErrorHandler: middleware.ErrorHandler,
 		AppName:      "Project Sprint Week 4 - Raide Hailing",
 	})
-
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		logging.GetLogger("config").Error(err.Error())
-	}
-	logging.SetLogLevel(cfg.LogLevel)
-
-	mainInitLogger := logging.GetLogger("main", "init")
-
-	mainInitLogger.Debug(fmt.Sprintf("%+v", cfg))
+	cfg := config.NewConfig()
 
 	hash := hash.NewHash(cfg)
 	jwt := jwt.NewJWTService(cfg)
@@ -59,7 +50,7 @@ func main() {
 
 	// register validation
 	if err := valid.RegisterValidation("imageUrl", validation.ValidateImageURL); err != nil {
-		mainInitLogger.Error(err.Error())
+		logging.GetLogger("validator").Error(err.Error())
 	}
 
 	// AWS Config
@@ -68,20 +59,20 @@ func main() {
 		awsCfg.WithRegion("ap-southeast-1"),
 		awsCfg.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(
-				cfg.AwsAccessKeyID,
-				cfg.AwsSecretAccessKey,
+				cfg.AWS.ID,
+				cfg.AWS.SecretKey,
 				"",
 			),
 		),
 	)
 
 	if err != nil {
-		mainInitLogger.Error(err.Error())
+		logging.GetLogger().Error(err.Error())
 	}
 
 	db, err := database.InitDatabase(cfg)
 	if err != nil {
-		mainInitLogger.Error(err.Error())
+		logging.GetLogger("database").Error(err.Error())
 	}
 
 	statementutil.SetUp(db)
@@ -100,7 +91,7 @@ func main() {
 
 	// service
 	userService := userService.NewUserService(userRepo, jwt, hash)
-	imageService := imageService.NewImageService(awsConfig, cfg.AwsS3BucketName)
+	imageService := imageService.NewImageService(awsConfig, cfg.AWS.BucketName)
 	merchantService := merchantService.NewMerchantService(merchantRepo)
 	purchaseService := purchaseService.NewPurchaseService(purchaseRepo)
 
@@ -116,6 +107,5 @@ func main() {
 	routes.MerchantRoute(app, merchantController, jwt, userService)
 	routes.PurchaseRoute(app, purchaseController, jwt, userService)
 
-	logging.GetLogger("main").Info("Server running on " + fmt.Sprintf("%v:%v", cfg.ServerHost, cfg.ServerPort))
-	app.Listen(fmt.Sprintf("%v:%v", cfg.ServerHost, cfg.ServerPort))
+	log.Fatal(app.Listen(":8080"))
 }

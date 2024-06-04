@@ -14,10 +14,10 @@ type JWTInterface interface {
 }
 
 type JWTService struct {
-	cfg config.Global
+	cfg *config.Global
 }
 
-func NewJWTService(cfg config.Global) JWTInterface {
+func NewJWTService(cfg *config.Global) JWTInterface {
 	return &JWTService{
 		cfg: cfg,
 	}
@@ -47,14 +47,14 @@ func (s *JWTService) GenerateJWT(id, username, role string) (string, error) {
 		},
 	})
 
-	tokenString, err := token.SignedString([]byte(s.cfg.JwtSecretKey))
+	tokenString, err := token.SignedString([]byte(s.cfg.Jwt.Secret))
 	return tokenString, err
 }
 
 func (s *JWTService) ValidateToken(tokenString string) (*JWTPayload, error) {
 	claims := &JWTClaims{}
 	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(s.cfg.JwtSecretKey), nil
+		return []byte(s.cfg.Jwt.Secret), nil
 	})
 	if err != nil {
 		return nil, customErr.NewUnauthorizedError("Access denied: " + err.Error())
