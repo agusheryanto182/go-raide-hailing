@@ -21,9 +21,9 @@ func InitDatabase(cfg *config.Global) (*sqlx.DB, error) {
 
 	db, err := sqlx.Connect("pgx", dsn)
 
-	db.SetMaxOpenConns(30)
-	db.SetMaxIdleConns(15)
-	db.SetConnMaxLifetime(0)
+	db.SetMaxOpenConns(100)
+	// db.SetMaxIdleConns(15)
+	// db.SetConnMaxLifetime(0)
 
 	log.Println("Database connected")
 

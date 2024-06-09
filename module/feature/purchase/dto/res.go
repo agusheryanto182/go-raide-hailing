@@ -33,12 +33,12 @@ type ResEstimateItem struct {
 }
 
 type ResGetOrders struct {
-	OrderId string `db:"order_id" json:"orderId"`
-	Orders  []*Orders
+	OrderId string    `db:"order_id" json:"orderId"`
+	Orders  []*Orders `json:"orders"`
 }
 
 type Orders struct {
-	Merchant *entities.Merchant `json:"merchants"`
+	Merchant *entities.Merchant `json:"merchant"`
 	Items    []*Items           `json:"items"`
 }
 

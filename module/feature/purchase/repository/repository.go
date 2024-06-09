@@ -264,7 +264,7 @@ func (p *purchaseRepository) PostEstimate(ctx context.Context, merchantUUIDParam
 			if errors.Is(err, sql.ErrNoRows) {
 				return nil, nil, customErr.NewNotFoundError("merchant not found")
 			}
-			return nil, nil, customErr.NewInternalServerError("failed to get merchants : " + err.Error())
+			return nil, nil, customErr.NewNotFoundError("failed to get merchants : " + err.Error())
 		}
 
 		defer rows.Close()
@@ -288,7 +288,7 @@ func (p *purchaseRepository) PostEstimate(ctx context.Context, merchantUUIDParam
 			if errors.Is(err, sql.ErrNoRows) {
 				return nil, nil, customErr.NewNotFoundError("item not found")
 			}
-			return nil, nil, customErr.NewInternalServerError("failed to get items : " + err.Error())
+			return nil, nil, customErr.NewNotFoundError("failed to get items : " + err.Error())
 		}
 
 		defer rows.Close()

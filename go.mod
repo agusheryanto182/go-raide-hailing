@@ -14,6 +14,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
+	github.com/lib/pq v1.10.9
 	github.com/phsym/console-slog v0.3.1
 	golang.org/x/crypto v0.21.0
 )

@@ -58,6 +58,10 @@ func (p *purchaseController) PostOrders(ctx *fiber.Ctx) error {
 		return customErr.NewBadRequestError(err.Error())
 	}
 
+	if req.EstimateId == "" {
+		return customErr.NewBadRequestError("estimate id must be provided")
+	}
+
 	result, err := p.purchaseService.PostOrders(ctx.Context(), req)
 	if err != nil {
 		return err
@@ -76,6 +80,24 @@ func (p *purchaseController) PostEstimate(ctx *fiber.Ctx) error {
 	req.UserId = currentUser.Id
 	if err := request.BindValidate(ctx, req, p.validator); err != nil {
 		return customErr.NewBadRequestError(err.Error())
+	}
+
+	// // Validate UUIDs
+	for _, order := range req.Orders {
+		if order.MerchantId == "" {
+			return customErr.NewBadRequestError("Invalid merchant id")
+		}
+		// if _, err := uuid.Parse(order.MerchantId); err != nil {
+		// 	return customErr.NewBadRequestError("Invalid merchant id")
+		// }
+		for _, item := range order.Items {
+			if item.ItemId == "" {
+				return customErr.NewBadRequestError("Invalid item id")
+			}
+			// if _, err := uuid.Parse(item.ItemId); err != nil {
+			// 	return customErr.NewBadRequestError("Invalid item id")
+			// }
+		}
 	}
 
 	startingPoints := 0
@@ -118,6 +140,10 @@ func (p *purchaseController) GetNearbyMerchants(ctx *fiber.Ctx) error {
 	long, err := strconv.ParseFloat(coordParts[1], 64)
 	if err != nil {
 		return customErr.NewBadRequestError("Invalid longitude : " + err.Error())
+	}
+
+	if lat < -90 || lat > 90 || long < -180 || long > 180 {
+		return customErr.NewBadRequestError("Invalid coordinates")
 	}
 
 	req := new(dto.ReqNearbyMerchants)

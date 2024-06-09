@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/agusheryanto182/go-raide-hailing/module/feature/purchase/dto"
+	"github.com/agusheryanto182/go-raide-hailing/utils/customErr"
 )
 
 func Haversine(lat1, lon1, lat2, lon2 float64) float64 {
@@ -25,10 +26,10 @@ func CalculateTotalPriceAndDeliveryTime(merchant []*dto.ResEstimateMerchant, ite
 		// Calculate distance from user location to merchant
 		distance := Haversine(userLat, userLong, val.LocationLat, val.LocationLong)
 
-		// maxDistance := math.Sqrt(3) // 1.7320508075688772km
-		// if distance > maxDistance {
-		// 	return 0, 0, customErr.NewBadRequestError("merchant is too far away")
-		// }
+		maxDistance := math.Sqrt(3) // 1.7320508075688772km
+		if distance > maxDistance {
+			return 0, 0, customErr.NewBadRequestError("merchant is too far away")
+		}
 
 		if distance > currDistance {
 			currDistance = distance
