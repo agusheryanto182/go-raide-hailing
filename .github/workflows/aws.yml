@@ -7,7 +7,7 @@ on:
 env:
   AWS_REGION: ap-southeast-1
   ECR_REPOSITORY: agusheryanto182-repository
-  ECS_SERVICE: agusheryanto182-service
+  ECS_SERVICE: agusheryanto1822-service
   ECS_CLUSTER: projectsprint
   CONTAINER_NAME: agusheryanto182-service-container
 
