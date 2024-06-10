@@ -49,7 +49,7 @@ Ride Hailing is a food delivery app that user can use to buy food and drinks!
 1. Postman
 
    ```bash
-   https://documenter.getpostman.com
+   https://documenter.getpostman.com/view/32137512/2sA3XLFjKN
    ```
 
 2. Database
